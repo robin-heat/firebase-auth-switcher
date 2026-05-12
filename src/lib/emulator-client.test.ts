@@ -9,7 +9,7 @@ describe('listUsers', () => {
     vi.restoreAllMocks();
   });
 
-  it('fetches users from emulator query endpoint', async () => {
+  it('fetches users from emulator batchGet endpoint', async () => {
     const mockUsers = [{ localId: 'uid1', email: 'a@b.com' }];
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -18,23 +18,21 @@ describe('listUsers', () => {
 
     const result = await listUsers(config);
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:9099/identitytoolkit.googleapis.com/v1/projects/demo-project/accounts:query',
-      expect.objectContaining({ method: 'POST' })
+      'http://localhost:9099/identitytoolkit.googleapis.com/v1/projects/demo-project/accounts:batchGet?maxResults=500',
+      expect.objectContaining({ method: 'GET' })
     );
     expect(result.users).toEqual(mockUsers);
   });
 
-  it('passes pageToken when provided', async () => {
+  it('passes pageToken as query param when provided', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ users: [] }),
     } as Response);
 
     await listUsers(config, 'token-abc');
-    const body = JSON.parse(
-      (fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body
-    );
-    expect(body.nextPageToken).toBe('token-abc');
+    const url = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
+    expect(url).toContain('nextPageToken=token-abc');
   });
 
   it('throws on non-ok response', async () => {

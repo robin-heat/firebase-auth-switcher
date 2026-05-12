@@ -14,17 +14,12 @@ export async function listUsers(
   config: Config,
   pageToken?: string
 ): Promise<ListUsersResult> {
-  const url = `${baseUrl(config)}/identitytoolkit.googleapis.com/v1/projects/${config.projectId}/accounts:query`;
-  const body: Record<string, unknown> = { returnUserInfo: true, maxResults: 500 };
-  if (pageToken) body.nextPageToken = pageToken;
+  let url = `${baseUrl(config)}/identitytoolkit.googleapis.com/v1/projects/${config.projectId}/accounts:batchGet?maxResults=500`;
+  if (pageToken) url += `&nextPageToken=${encodeURIComponent(pageToken)}`;
 
   const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer owner',
-    },
-    body: JSON.stringify(body),
+    method: 'GET',
+    headers: { 'Authorization': 'Bearer owner' },
   });
 
   if (!res.ok) {
