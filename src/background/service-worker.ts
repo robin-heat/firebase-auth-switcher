@@ -20,7 +20,7 @@ async function handleMessage(message: MessageType): Promise<MessageResponse> {
     const results = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: readCurrentUserInPage,
-      args: [config.projectId],
+      args: [],
     });
 
     return { success: true, user: results[0]?.result ?? null };
@@ -33,7 +33,7 @@ async function handleMessage(message: MessageType): Promise<MessageResponse> {
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: injectAuthInPage,
-      args: [message.payload, config.projectId],
+      args: [message.payload],
     });
 
     return { success: true, user: message.payload };
@@ -46,7 +46,7 @@ async function handleMessage(message: MessageType): Promise<MessageResponse> {
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: clearCurrentUserInPage,
-      args: [config.projectId],
+      args: [],
     });
 
     return { success: true, user: null };
@@ -55,9 +55,9 @@ async function handleMessage(message: MessageType): Promise<MessageResponse> {
   throw new Error('Unknown message type');
 }
 
-async function readCurrentUserInPage(
-  projectId: string
-): Promise<import('../lib/types').AuthState | null> {
+// These functions are serialized and injected into the page — must be self-contained.
+
+async function readCurrentUserInPage(): Promise<import('../lib/types').AuthState | null> {
   const DB_NAME = 'firebaseLocalStorageDb';
   const STORE_NAME = 'firebaseLocalStorage';
 
@@ -74,8 +74,7 @@ async function readCurrentUserInPage(
     req.onsuccess = () => {
       const cursor = req.result;
       if (!cursor) { resolve(null); return; }
-      if ((cursor.key as string).startsWith('firebase:authUser:') &&
-          (cursor.key as string).endsWith(`:${projectId}`)) {
+      if ((cursor.key as string).startsWith('firebase:authUser:')) {
         resolve(cursor.value.value);
       } else { cursor.continue(); }
     };
@@ -85,7 +84,6 @@ async function readCurrentUserInPage(
 
 async function injectAuthInPage(
   state: import('../lib/types').AuthState,
-  projectId: string
 ): Promise<void> {
   const DB_NAME = 'firebaseLocalStorageDb';
   const STORE_NAME = 'firebaseLocalStorage';
@@ -97,10 +95,36 @@ async function injectAuthInPage(
     req.onerror = () => reject(req.error);
   });
 
-  const key = `firebase:authUser:${state.apiKey}:${projectId}`;
+  // Detect the key format the app already uses (to get the real apiKey and app name).
+  // Firebase SDK uses: firebase:authUser:{apiKey}:{appName} where appName is usually [DEFAULT].
+  const existingKey: string | null = await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).openCursor();
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (!cursor) { resolve(null); return; }
+      if ((cursor.key as string).startsWith('firebase:authUser:')) {
+        resolve(cursor.key as string);
+      } else { cursor.continue(); }
+    };
+    req.onerror = () => reject(req.error);
+  });
+
+  // Reuse the existing key's apiKey and appName, or fall back to [DEFAULT].
+  let key: string;
+  let apiKey = state.apiKey;
+  if (existingKey) {
+    // firebase:authUser:{apiKey}:{appName} — split on third colon
+    const thirdColon = existingKey.indexOf(':', 'firebase:authUser:'.length);
+    apiKey = existingKey.slice('firebase:authUser:'.length, thirdColon);
+    key = existingKey; // overwrite the same slot so Firebase SDK finds it
+  } else {
+    key = `firebase:authUser:${apiKey}:[DEFAULT]`;
+  }
+
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    const req = tx.objectStore(STORE_NAME).put({ fbase_key: key, value: state });
+    const req = tx.objectStore(STORE_NAME).put({ fbase_key: key, value: { ...state, apiKey } });
     req.onsuccess = () => resolve();
     req.onerror = () => reject(req.error);
   });
@@ -108,7 +132,7 @@ async function injectAuthInPage(
   location.reload();
 }
 
-async function clearCurrentUserInPage(projectId: string): Promise<void> {
+async function clearCurrentUserInPage(): Promise<void> {
   const DB_NAME = 'firebaseLocalStorageDb';
   const STORE_NAME = 'firebaseLocalStorage';
 
@@ -125,8 +149,7 @@ async function clearCurrentUserInPage(projectId: string): Promise<void> {
     req.onsuccess = () => {
       const cursor = req.result;
       if (!cursor) { resolve(); return; }
-      if ((cursor.key as string).startsWith('firebase:authUser:') &&
-          (cursor.key as string).endsWith(`:${projectId}`)) {
+      if ((cursor.key as string).startsWith('firebase:authUser:')) {
         cursor.delete();
         resolve();
       } else { cursor.continue(); }
