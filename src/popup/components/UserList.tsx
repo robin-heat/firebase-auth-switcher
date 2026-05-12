@@ -6,12 +6,14 @@ import styles from './UserList.module.css';
 interface Props {
   users: EmulatorUser[];
   onSwitch: (user: EmulatorUser) => void;
+  onSignOut: () => void;
   loadingUid: string | null;
+  currentUid: string | null;
   onLoadMore: () => void;
   hasMore: boolean;
 }
 
-export function UserList({ users, onSwitch, loadingUid, onLoadMore, hasMore }: Props) {
+export function UserList({ users, onSwitch, onSignOut, loadingUid, currentUid, onLoadMore, hasMore }: Props) {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,7 +37,9 @@ export function UserList({ users, onSwitch, loadingUid, onLoadMore, hasMore }: P
           key={user.localId}
           user={user}
           onSwitch={onSwitch}
+          onSignOut={onSignOut}
           isLoading={loadingUid === user.localId}
+          isCurrent={user.localId === currentUid}
         />
       ))}
       {hasMore && <div ref={sentinelRef} className={styles.sentinel} />}
