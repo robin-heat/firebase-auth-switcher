@@ -29,9 +29,9 @@ export function App() {
         setNextPageToken(result.nextPageToken);
         setHasMore(!!result.nextPageToken);
         setConnected(true);
-      } catch {
+      } catch (err) {
         setConnected(false);
-        setError(`Cannot connect to ${cfg.host}:${cfg.port}`);
+        setError(err instanceof Error ? err.message : `Cannot connect to ${cfg.host}:${cfg.port}`);
       }
     });
   }, []);
