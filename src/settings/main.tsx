@@ -1,5 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { Settings } from './Settings';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode><div>Settings</div></React.StrictMode>
+  <React.StrictMode>
+    <Settings />
+  </React.StrictMode>
 );

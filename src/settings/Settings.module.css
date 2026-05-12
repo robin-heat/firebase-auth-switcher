@@ -1,0 +1,60 @@
+.settings {
+  padding: 20px;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  font-family: system-ui, sans-serif;
+  min-width: 320px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 20px;
+  color: #fff;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.field input {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #e0e0e0;
+  font-size: 13px;
+  outline: none;
+}
+
+.field input:focus {
+  border-color: #1565c0;
+}
+
+.saveButton {
+  padding: 9px;
+  background: #1565c0;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.saveButton:hover {
+  background: #1976d2;
+}
