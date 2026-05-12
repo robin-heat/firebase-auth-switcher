@@ -21,14 +21,16 @@ function avatarInitial(user: EmulatorUser): string {
 interface Props {
   user: EmulatorUser;
   onSwitch: (user: EmulatorUser) => void;
+  onSignOut: () => void;
   isLoading: boolean;
+  isCurrent: boolean;
 }
 
-export function UserRow({ user, onSwitch, isLoading }: Props) {
+export function UserRow({ user, onSwitch, onSignOut, isLoading, isCurrent }: Props) {
   const label = user.email ?? user.localId;
 
   return (
-    <div className={styles.row}>
+    <div className={`${styles.row} ${isCurrent ? styles.current : ''}`}>
       <div
         data-testid="avatar"
         className={styles.avatar}
@@ -40,13 +42,23 @@ export function UserRow({ user, onSwitch, isLoading }: Props) {
         <span className={styles.email}>{label}</span>
         {user.displayName && <span className={styles.name}>{user.displayName}</span>}
       </div>
-      <button
-        className={styles.switchButton}
-        onClick={() => onSwitch(user)}
-        disabled={isLoading}
-      >
-        Switch
-      </button>
+      {isCurrent ? (
+        <button
+          className={styles.logoutButton}
+          onClick={onSignOut}
+          disabled={isLoading}
+        >
+          Logout
+        </button>
+      ) : (
+        <button
+          className={styles.switchButton}
+          onClick={() => onSwitch(user)}
+          disabled={isLoading}
+        >
+          Switch
+        </button>
+      )}
     </div>
   );
 }

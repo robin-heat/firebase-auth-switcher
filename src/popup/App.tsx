@@ -123,7 +123,9 @@ export function App() {
       <UserList
         users={filteredUsers}
         onSwitch={handleSwitch}
+        onSignOut={handleSignOut}
         loadingUid={loadingUid}
+        currentUid={currentUser?.uid ?? null}
         onLoadMore={handleLoadMore}
         hasMore={hasMore}
       />

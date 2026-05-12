@@ -10,6 +10,14 @@
   background: #252525;
 }
 
+.current {
+  background: #1a2a1a;
+}
+
+.current:hover {
+  background: #1f321f;
+}
+
 .avatar {
   width: 30px;
   height: 30px;
@@ -61,6 +69,26 @@
 }
 
 .switchButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.logoutButton {
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 4px 10px;
+  background: transparent;
+  color: #ef9a9a;
+  border: 1px solid #c62828;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.logoutButton:hover:not(:disabled) {
+  background: rgba(198, 40, 40, 0.15);
+}
+
+.logoutButton:disabled {
   opacity: 0.5;
   cursor: default;
 }
