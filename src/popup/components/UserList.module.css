@@ -1,0 +1,16 @@
+.list {
+  overflow-y: auto;
+  max-height: 300px;
+  padding: 4px 0;
+}
+
+.empty {
+  padding: 24px 14px;
+  text-align: center;
+  color: #555;
+  font-size: 12px;
+}
+
+.sentinel {
+  height: 1px;
+}
