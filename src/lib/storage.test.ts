@@ -25,7 +25,7 @@ describe('getConfig', () => {
       }
     );
     const result = await getConfig();
-    expect(result).toEqual({ host: 'localhost', port: 9099, projectId: '' });
+    expect(result).toEqual({ host: 'localhost', port: 9099, projectId: '', firebaseApiKey: '' });
   });
 });
 

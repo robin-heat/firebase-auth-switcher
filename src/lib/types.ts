@@ -2,12 +2,14 @@ export interface Config {
   host: string;
   port: number;
   projectId: string;
+  firebaseApiKey: string;
 }
 
 export const DEFAULT_CONFIG: Config = {
   host: 'localhost',
   port: 9099,
   projectId: '',
+  firebaseApiKey: '',
 };
 
 export interface EmulatorUser {

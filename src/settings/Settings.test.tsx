@@ -15,11 +15,12 @@ describe('Settings', () => {
     );
   });
 
-  it('renders three input fields', async () => {
+  it('renders four input fields', async () => {
     render(<Settings />);
     expect(await screen.findByLabelText('Host')).toBeInTheDocument();
     expect(screen.getByLabelText('Port')).toBeInTheDocument();
     expect(screen.getByLabelText('Project ID')).toBeInTheDocument();
+    expect(screen.getByLabelText('Firebase API Key')).toBeInTheDocument();
   });
 
   it('pre-fills fields from stored config', async () => {
@@ -38,7 +39,7 @@ describe('Settings', () => {
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => {
       expect(chrome.storage.local.set).toHaveBeenCalledWith(
-        { config: { host: 'localhost', port: 9099, projectId: 'new-project' } },
+        { config: { host: 'localhost', port: 9099, projectId: 'new-project', firebaseApiKey: '' } },
         expect.any(Function)
       );
     });

@@ -33,7 +33,7 @@ async function handleMessage(message: MessageType): Promise<MessageResponse> {
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: injectAuthInPage,
-      args: [message.payload],
+      args: [message.payload, config.firebaseApiKey],
     });
 
     return { success: true, user: message.payload };
@@ -84,6 +84,7 @@ async function readCurrentUserInPage(): Promise<import('../lib/types').AuthState
 
 async function injectAuthInPage(
   state: import('../lib/types').AuthState,
+  configuredApiKey: string,
 ): Promise<void> {
   const DB_NAME = 'firebaseLocalStorageDb';
   const STORE_NAME = 'firebaseLocalStorage';
@@ -110,14 +111,15 @@ async function injectAuthInPage(
     req.onerror = () => reject(req.error);
   });
 
-  // Reuse the existing key's apiKey and appName, or fall back to [DEFAULT].
+  // Prefer: existing key (detects real apiKey/appName from the page).
+  // Fallback: configuredApiKey from extension settings + [DEFAULT] app name.
   let key: string;
-  let apiKey = state.apiKey;
+  let apiKey = configuredApiKey || state.apiKey;
   if (existingKey) {
-    // firebase:authUser:{apiKey}:{appName} — split on third colon
-    const thirdColon = existingKey.indexOf(':', 'firebase:authUser:'.length);
-    apiKey = existingKey.slice('firebase:authUser:'.length, thirdColon);
-    key = existingKey; // overwrite the same slot so Firebase SDK finds it
+    const prefixLen = 'firebase:authUser:'.length;
+    const thirdColon = existingKey.indexOf(':', prefixLen);
+    apiKey = existingKey.slice(prefixLen, thirdColon);
+    key = existingKey;
   } else {
     key = `firebase:authUser:${apiKey}:[DEFAULT]`;
   }

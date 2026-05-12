@@ -8,11 +8,12 @@ export function Settings() {
     host: 'localhost',
     port: 9099,
     projectId: '',
+    firebaseApiKey: '',
   });
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    getConfig().then(setLocalConfig);
+    getConfig().then((cfg) => setLocalConfig({ firebaseApiKey: '', ...cfg }));
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -49,6 +50,15 @@ export function Settings() {
             aria-label="Project ID"
             value={config.projectId}
             onChange={(e) => setLocalConfig({ ...config, projectId: e.target.value })}
+          />
+        </label>
+        <label className={styles.field}>
+          <span>Firebase API Key</span>
+          <input
+            aria-label="Firebase API Key"
+            value={config.firebaseApiKey}
+            placeholder="e.g. demo-api-key"
+            onChange={(e) => setLocalConfig({ ...config, firebaseApiKey: e.target.value })}
           />
         </label>
         <button type="submit" className={styles.saveButton}>
