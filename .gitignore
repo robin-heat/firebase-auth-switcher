@@ -5,3 +5,4 @@ dist/
 docs/superpowers/
 *.env
 *.env.*
+*.zip
