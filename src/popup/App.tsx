@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getConfig } from '../lib/storage';
 import { listUsers, getIdToken } from '../lib/emulator-client';
+import { readCurrentUser, injectAuth, clearCurrentUser } from '../lib/page-bridge';
 import type { AuthState, Config, EmulatorUser } from '../lib/types';
 import { Header } from './components/Header';
 import { UserBanner } from './components/UserBanner';
@@ -37,10 +38,8 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    chrome.runtime.sendMessage({ type: 'GET_CURRENT_USER' }, (response) => {
-      if (response?.success && response.user) {
-        setCurrentUser({ email: response.user.email, uid: response.user.uid });
-      }
+    readCurrentUser().then((user) => {
+      if (user) setCurrentUser({ email: user.email, uid: user.uid });
     });
   }, []);
 
@@ -98,7 +97,7 @@ export function App() {
         apiKey: 'fake-api-key',
         appName: '[DEFAULT]',
       };
-      chrome.runtime.sendMessage({ type: 'SWITCH_USER', payload: authState });
+      await injectAuth(authState, config.firebaseApiKey);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Switch failed');
       setLoadingUid(null);
@@ -106,7 +105,7 @@ export function App() {
   }
 
   function handleSignOut() {
-    chrome.runtime.sendMessage({ type: 'SIGN_OUT' });
+    clearCurrentUser();
     setCurrentUser(null);
   }
 
