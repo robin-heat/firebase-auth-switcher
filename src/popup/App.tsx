@@ -9,7 +9,11 @@ import { SearchInput } from './components/SearchInput';
 import { UserList } from './components/UserList';
 import styles from './App.module.css';
 
+const _appMount = performance.now();
+
 export function App() {
+  console.log(`[popup] App() mounted  +${(_appMount).toFixed(0)}ms`);
+
   const [config, setConfig] = useState<Config | null>(null);
   const [connected, setConnected] = useState(false);
   const [allUsers, setAllUsers] = useState<EmulatorUser[]>([]);
@@ -21,11 +25,16 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const t = performance.now();
+    console.log(`[popup] getConfig() start  +${t.toFixed(0)}ms`);
     getConfig().then(async (cfg) => {
+      console.log(`[popup] getConfig() done  +${(performance.now() - t).toFixed(0)}ms (storage round-trip)`);
       setConfig(cfg);
-      if (!cfg.projectId) return;
+      if (!cfg.projectId) { console.warn('[popup] no projectId configured'); return; }
       try {
+        const t2 = performance.now();
         const result = await listUsers(cfg);
+        console.log(`[popup] listUsers() done  +${(performance.now() - t2).toFixed(0)}ms`);
         setAllUsers(result.users ?? []);
         setNextPageToken(result.nextPageToken);
         setHasMore(!!result.nextPageToken);
@@ -38,7 +47,10 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    const t = performance.now();
+    console.log(`[popup] readCurrentUser() start  +${t.toFixed(0)}ms`);
     readCurrentUser().then((user) => {
+      console.log(`[popup] readCurrentUser() done  +${(performance.now() - t).toFixed(0)}ms  user=${user?.uid ?? 'none'}`);
       if (user) setCurrentUser({ email: user.email, uid: user.uid });
     });
   }, []);
