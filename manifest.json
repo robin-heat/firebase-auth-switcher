@@ -21,9 +21,5 @@
       "128": "icons/icon128.png"
     }
   },
-  "options_page": "settings.html",
-  "background": {
-    "service_worker": "service-worker.js",
-    "type": "module"
-  }
+  "options_page": "settings.html"
 }

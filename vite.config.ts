@@ -2,9 +2,17 @@ import { resolve } from 'path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: '',
   plugins: [react()],
+  resolve: mode === 'test' ? {} : {
+    alias: {
+      'react/jsx-runtime': 'preact/jsx-runtime',
+      'react-dom/test-utils': 'preact/test-utils',
+      'react-dom': 'preact/compat',
+      'react': 'preact/compat',
+    },
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -12,7 +20,6 @@ export default defineConfig({
       input: {
         popup: resolve(__dirname, 'popup.html'),
         settings: resolve(__dirname, 'settings.html'),
-        'service-worker': resolve(__dirname, 'src/background/service-worker.ts'),
         'auth-injector': resolve(__dirname, 'src/content/auth-injector.ts'),
       },
       output: {
@@ -27,4 +34,4 @@ export default defineConfig({
     globals: true,
     setupFiles: ['src/test-setup.ts'],
   },
-});
+}));
